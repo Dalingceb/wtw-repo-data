@@ -1,3 +1,4 @@
 # One pair per line, no "=X" suffix (added automatically).
 # Add or remove pairs as needed - the workflow re-reads this file every run.
 GBPCAD
+CL=F
