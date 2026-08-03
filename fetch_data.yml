@@ -1,0 +1,42 @@
+name: Fetch Forex Data
+
+on:
+  schedule:
+    # Every hour, Monday-Friday (UTC). Forex trades ~24/5, so this covers
+    # the full trading week. GitHub's schedule can lag by a few minutes
+    # under load - that's fine for this use case.
+    - cron: "0 * * * 1-5"
+  workflow_dispatch: {}   # adds a manual "Run workflow" button in the Actions tab
+
+permissions:
+  contents: write   # needed so the workflow can commit the fetched CSVs back
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install yfinance pandas
+
+      - name: Run fetch script
+        run: python scripts/fetch_multi_tf.py
+
+      - name: Commit and push if data changed
+        run: |
+          git config user.name "wtw-data-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Auto-update forex data $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git push
+          fi
