@@ -61,9 +61,16 @@ def read_pairs() -> list:
 
 
 def to_ticker(symbol: str) -> str:
-    """Plain forex codes get '=X' appended. Anything already containing '='
-    (e.g. 'CL=F') is assumed to already be a valid yfinance ticker."""
-    return symbol if "=" in symbol else f"{symbol}=X"
+    """Forex pairs must be explicitly marked with an 'FX:' prefix (e.g.
+    'FX:GBPCAD' -> 'GBPCAD=X'), since that's the only category needing a
+    suffix transformation. Everything else (stocks like 'CRWV', futures
+    like 'CL=F', indices like '^GSPC') is used exactly as written - this
+    avoids the earlier bug where any symbol without '=' was assumed to be
+    forex and incorrectly got '=X' appended (which would have silently
+    broken a plain stock ticker like 'CRWV')."""
+    if symbol.startswith("FX:"):
+        return symbol[3:] + "=X"
+    return symbol
 
 
 def fetch_pair(symbol: str):
@@ -72,7 +79,8 @@ def fetch_pair(symbol: str):
     Output folder is named after the plain symbol either way, with '='
     replaced so it's filesystem-safe."""
     ticker = to_ticker(symbol)
-    folder_name = symbol.replace("=", "_")
+    folder_name = symbol[3:] if symbol.startswith("FX:") else symbol
+    folder_name = folder_name.replace("=", "_").replace("^", "")
     pair_dir = os.path.join(DATA_DIR, folder_name)
     os.makedirs(pair_dir, exist_ok=True)
 
