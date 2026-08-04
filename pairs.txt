@@ -1,4 +1,8 @@
-# One pair per line, no "=X" suffix (added automatically).
-# Add or remove pairs as needed - the workflow re-reads this file every run.
-GBPCAD
+# One symbol per line.
+# Forex pairs need an "FX:" prefix (e.g. FX:GBPCAD) - this gets "=X" appended
+# automatically. Everything else (stocks, futures, indices) is used exactly
+# as written - e.g. CRWV, CL=F, ^GSPC.
+# Add or remove as needed - the workflow re-reads this file every run.
+FX:GBPCAD
 CL=F
+CRWV
